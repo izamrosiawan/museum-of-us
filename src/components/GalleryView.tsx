@@ -58,7 +58,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
         className="space-y-4"
       >
         <h2 className="font-display-lg text-display-lg text-charcoal tracking-tight font-semibold">
-          {language === 'en' ? 'Museum Hidup' : 'Museum Hidup'}
+          {language === 'en' ? 'Living Museum' : 'Museum Hidup'}
         </h2>
         <p className="font-body-lg text-body-lg text-muted-taupe max-w-xl italic leading-relaxed">
           {language === 'en'

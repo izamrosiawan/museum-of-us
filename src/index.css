@@ -7,29 +7,29 @@
   --font-serif: "Cormorant Garamond", serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --color-warm-cream: #F8FAFC;
-  --color-gallery-beige: #F1F5F9;
-  --color-charcoal: #0F172A;
-  --color-muted-taupe: #64748B;
-  --color-terracotta: #007AFF;
-  --color-sage-green: #10B981;
-  --color-dusty-blue: #0284C7;
-  --color-heritage-gold: #F59E0B;
-  --color-danger-rose: #EF4444;
+  --color-warm-cream: #FAF6F0;
+  --color-gallery-beige: #F3EFE9;
+  --color-charcoal: #1A1D20;
+  --color-muted-taupe: #78716C;
+  --color-terracotta: #C96F53;
+  --color-sage-green: #829384;
+  --color-dusty-blue: #6B7F8A;
+  --color-heritage-gold: #D4A359;
+  --color-danger-rose: #E11D48;
 
   /* Surface and custom background overrides matching Geometric Balance */
-  --color-background: #F8FAFC;
-  --color-on-background: #0F172A;
+  --color-background: #FAF6F0;
+  --color-on-background: #1A1D20;
   --color-surface: #FFFFFF;
-  --color-surface-container: #F1F5F9;
+  --color-surface-container: #F3EFE9;
   --color-surface-container-low: #FFFFFF;
-  --color-surface-container-highest: #E2E8F0;
-  --color-outline: #64748B;
-  --color-outline-variant: #E2E8F0;
-  --color-secondary-container: #F1F5F9;
-  --color-on-secondary-container: #0F172A;
-  --color-tertiary-container: #0F172A;
-  --color-on-tertiary-container: #FFFFFF;
+  --color-surface-container-highest: #E7E1D8;
+  --color-outline: #78716C;
+  --color-outline-variant: #E7E1D8;
+  --color-secondary-container: #F3EFE9;
+  --color-on-secondary-container: #1A1D20;
+  --color-tertiary-container: #1A1D20;
+  --color-on-tertiary-container: #FAF6F0;
 }
 
 /* Base style enhancements */

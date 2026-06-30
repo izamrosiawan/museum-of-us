@@ -17,7 +17,6 @@ import {
   Laptop, 
   Menu, 
   Heart, 
-  Sliders, 
   Settings, 
   X,
   Sparkles
@@ -54,6 +53,9 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempProfileName, setTempProfileName] = useState(profile.name);
   const [tempPartnerName, setTempPartnerName] = useState(profile.partnerName);
+  
+  // Toast state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sync to local storage
   useEffect(() => {
@@ -90,10 +92,15 @@ export default function App() {
     audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
     audio.play().catch(() => {});
     
-    alert(language === 'en' 
+    setToastMessage(language === 'en' 
       ? '✨ Close your eyes. Re-inhale the scent of that rain, the murmur of those streets. The Sanctuary has logged your remembrance.' 
       : '✨ Pejamkan mata Anda. Hirup kembali aroma hujan itu, desas-desus jalanan itu. Tempat Suci telah mencatat kenangan Anda.'
     );
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      setToastMessage(prev => prev ? null : null);
+    }, 5000);
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -505,6 +512,33 @@ export default function App() {
           </motion.div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
+          >
+            <div className="bg-charcoal text-warm-cream p-4 rounded-xl shadow-lg border border-terracotta/30 flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
+              <div className="flex-grow">
+                <p className="text-xs leading-relaxed font-body-md font-medium">
+                  {toastMessage}
+                </p>
+              </div>
+              <button 
+                onClick={() => setToastMessage(null)}
+                className="text-muted-taupe hover:text-warm-cream transition-colors p-0.5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

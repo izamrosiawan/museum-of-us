@@ -40,6 +40,9 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
   const [newTagText, setNewTagText] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [includeLocation, setIncludeLocation] = useState(false);
+  const [customLocation, setCustomLocation] = useState('');
+  const [customWeather, setCustomWeather] = useState('');
+  const [customMood, setCustomMood] = useState('');
   const [isPrivate, setIsPrivate] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -88,9 +91,13 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
     if (!title.trim() || !description.trim()) return;
 
     const finalImage = customImageUrl.trim() || imageUrl;
+    const finalLoc = includeLocation ? (customLocation.trim() || 'Sanctuary Node') : 'Undisclosed';
+    const finalLocId = includeLocation ? (customLocation.trim() || 'Simpul Suaka') : 'Tidak Disebutkan';
+    const finalWeather = customWeather.trim() || 'Ambient Comfort, 22°C';
+    const finalMood = customMood.trim() || 'Resonated Emotion';
 
     const newArtifact: Artifact = {
-      id: Math.random().toString(),
+      id: Date.now().toString(),
       title: title,
       titleId: title, // Simulating same for both in user addition
       description: description,
@@ -101,12 +108,12 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
       dateId: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
       addedBy: userProfile.name,
       addedById: userProfile.name,
-      mood: 'Resonated Emotion',
-      moodId: 'Resonansi Emosi',
-      location: includeLocation ? 'Sanctuary Node' : 'Undisclosed',
-      locationId: includeLocation ? 'Simpul Suaka' : 'Tidak Disebutkan',
-      weather: 'Ambient Comfort, 22°C',
-      weatherId: 'Kenyamanan Ambient, 22°C',
+      mood: finalMood,
+      moodId: finalMood,
+      location: finalLoc,
+      locationId: finalLocId,
+      weather: finalWeather,
+      weatherId: finalWeather,
       category: selectedCategory,
       resonance: selectedResonance,
       tags: tags,
@@ -125,6 +132,9 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
     setDescription('');
     setTags(['Travel', 'Rain']);
     setIncludeLocation(false);
+    setCustomLocation('');
+    setCustomWeather('');
+    setCustomMood('');
     setIsPrivate(true);
 
     setTimeout(() => {
@@ -348,6 +358,17 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
                   </button>
                 ))}
               </div>
+
+              {/* Descriptive Mood Input */}
+              <div className="pt-1">
+                <input
+                  type="text"
+                  value={customMood}
+                  onChange={e => setCustomMood(e.target.value)}
+                  placeholder={language === 'en' ? 'Describe the mood (e.g., Nostalgic Solitude)' : 'Gambarkan suasana (misal, Kesunyian Nostalgia)'}
+                  className="w-full bg-gallery-beige/30 border border-outline-variant/20 rounded-xl px-3 py-2 text-xs outline-none text-charcoal focus:border-terracotta transition-colors"
+                />
+              </div>
             </div>
 
             {/* Catalog Tags with delete action and new input option */}
@@ -402,23 +423,58 @@ export const AddArtifactView: React.FC<AddArtifactViewProps> = ({
             <div className="pt-4 space-y-4 border-t border-outline-variant/15">
               
               {/* Include location toggle switch */}
-              <div 
-                onClick={() => setIncludeLocation(!includeLocation)}
-                className="flex items-center justify-between group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-muted-taupe group-hover:text-terracotta" />
-                  <span className="font-body-md text-charcoal text-xs">
-                    {t.includeLocationForm}
-                  </span>
+              <div className="space-y-3">
+                <div 
+                  onClick={() => setIncludeLocation(!includeLocation)}
+                  className="flex items-center justify-between group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-4 h-4 text-muted-taupe group-hover:text-terracotta" />
+                    <span className="font-body-md text-charcoal text-xs">
+                      {t.includeLocationForm}
+                    </span>
+                  </div>
+                  <div className={`w-10 h-5 rounded-full relative transition-colors ${
+                    includeLocation ? 'bg-terracotta' : 'bg-surface-container'
+                  }`}>
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${
+                      includeLocation ? 'right-1' : 'left-1'
+                    }`} />
+                  </div>
                 </div>
-                <div className={`w-10 h-5 rounded-full relative transition-colors ${
-                  includeLocation ? 'bg-terracotta' : 'bg-surface-container'
-                }`}>
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${
-                    includeLocation ? 'right-1' : 'left-1'
-                  }`} />
-                </div>
+
+                {includeLocation && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-3 pl-7 pt-1"
+                  >
+                    <div>
+                      <label className="block text-[9px] font-mono text-muted-taupe uppercase tracking-wider mb-1">
+                        {language === 'en' ? 'Location Name' : 'Nama Lokasi'}
+                      </label>
+                      <input
+                        type="text"
+                        value={customLocation}
+                        onChange={e => setCustomLocation(e.target.value)}
+                        placeholder={language === 'en' ? 'e.g., Veranda Café, Ubud' : 'misal, Kafe Beranda, Ubud'}
+                        className="w-full bg-gallery-beige/30 border border-outline-variant/20 rounded-xl px-3 py-2 text-xs outline-none text-charcoal focus:border-terracotta transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-mono text-muted-taupe uppercase tracking-wider mb-1">
+                        {language === 'en' ? 'Weather Condition' : 'Kondisi Cuaca'}
+                      </label>
+                      <input
+                        type="text"
+                        value={customWeather}
+                        onChange={e => setCustomWeather(e.target.value)}
+                        placeholder={language === 'en' ? 'e.g., Warm Sun, 28°C' : 'misal, Cerah Hangat, 28°C'}
+                        className="w-full bg-gallery-beige/30 border border-outline-variant/20 rounded-xl px-3 py-2 text-xs outline-none text-charcoal focus:border-terracotta transition-colors"
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               {/* Private flag switch */}

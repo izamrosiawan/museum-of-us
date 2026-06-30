@@ -161,7 +161,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               />
             </div>
             <p className="font-quote-italic text-[15px] leading-snug italic text-charcoal pr-2">
-              "{language === 'en' ? '"The rainy Tuesday at the station..."' : '"Selasa hujan di stasiun..."'}"
+              "{(() => {
+                const desc = language === 'en' ? randomArtifact.description : randomArtifact.descriptionId;
+                const sentences = desc.split(/[.!?]+/);
+                const firstSentence = sentences[0] ? sentences[0].trim() : '';
+                return firstSentence.length > 70 ? firstSentence.substring(0, 70) + '...' : firstSentence + '...';
+              })()}"
             </p>
           </div>
         </div>
@@ -179,8 +184,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="relative aspect-[4/5] md:aspect-[16/10] rounded-2xl overflow-hidden group border border-outline-variant shadow-[0_4px_24px_rgba(15,23,42,0.04)]">
             <img
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOTBEUpaFTvcDMqiycYcoT65YaGfc7tFRRUyAQPRHeGWe6w25Ngcj3mzmYONxvSiuw6rBNyTTHNIkmGMtjDAtL3WRjvYGDem_TWPxEkSvBL3Qwh-cc0_vUCLd8magqHqGcjJ10oPJMQzgB6mWH1vPmhJlgOayTHSehjLV5qysk4mL13799Q--Ea2wIUTMFpE-Wl-dTSB7nJM1Xes2_veBBSBBDJqJKhsN9kwbbO4BZWr11No0Ej7sw54p0ivkNMxN52PiMZNT3RS98"
-              alt="Golden Hour"
+              src={bannerArtifact.imageUrl}
+              alt={language === 'en' ? bannerArtifact.title : bannerArtifact.titleId}
               referrerPolicy="no-referrer"
             />
             {/* Elegant overlay gradient matching screenshot */}
@@ -191,11 +196,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {t.todaysMemory}
               </p>
               <h2 className="font-headline-lg text-headline-lg text-warm-cream mb-4 font-bold tracking-tight">
-                {language === 'en' ? 'The Golden Hour at Uluwatu' : 'Matahari Terbenam di Uluwatu'}
+                {language === 'en' ? bannerArtifact.title : bannerArtifact.titleId}
               </h2>
               <button
-                onClick={() => onViewArtifact('6')} // Leads to detailed Quietude/Uluwatu artifact
-                className="bg-warm-cream hover:bg-white text-charcoal hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-label-caps text-[10px] font-semibold tracking-widest shadow-sm active:scale-95"
+                onClick={() => onViewArtifact(bannerArtifact.id)}
+                className="bg-warm-cream hover:bg-white text-charcoal hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-label-caps text-[10px] font-semibold tracking-widest shadow-sm active:scale-95 cursor-pointer"
               >
                 {t.exhibitDetails}
               </button>
