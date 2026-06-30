@@ -56,6 +56,10 @@ export default function App() {
 
   // Real-time Supabase sync
   useEffect(() => {
+    if (!supabase) {
+      console.warn("Supabase is not initialized. Running in local-only mode.");
+      return;
+    }
     const fetchArtifacts = async () => {
       const { data, error } = await supabase
         .from('artifacts')
@@ -97,6 +101,13 @@ export default function App() {
 
   // Handle adding an artifact
   const handleSaveArtifact = async (newArtifact: Artifact) => {
+    if (!supabase) {
+      setArtifacts(prev => [newArtifact, ...prev]);
+      setTimeout(() => {
+        setCurrentView('gallery');
+      }, 800);
+      return;
+    }
     try {
       const { error } = await supabase
         .from('artifacts')
@@ -115,6 +126,14 @@ export default function App() {
 
   // Handle saving partner perspective
   const handleSavePerspective = async (artifactId: string, text: string) => {
+    if (!supabase) {
+      setArtifacts(prev => prev.map(art => 
+        art.id === artifactId 
+          ? { ...art, partnerPerspective: text, partnerPerspectiveId: text } 
+          : art
+      ));
+      return;
+    }
     try {
       const { error } = await supabase
         .from('artifacts')
