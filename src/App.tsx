@@ -7,8 +7,7 @@ import { GalleryView } from './components/GalleryView';
 import { AddArtifactView } from './components/AddArtifactView';
 import { ChroniclesView } from './components/ChroniclesView';
 import { DetailView } from './components/DetailView';
-import { db } from './firebase';
-import { collection, onSnapshot, doc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { supabase } from './supabase';
 import { 
   Home, 
   Landmark, 
@@ -55,21 +54,37 @@ export default function App() {
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Real-time Firestore sync
+  // Real-time Supabase sync
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'artifacts'), (snapshot) => {
-      const list: Artifact[] = [];
-      snapshot.forEach((doc) => {
-        list.push(doc.data() as Artifact);
-      });
-      // Sort chronologically descending
-      const sorted = list.sort((a, b) => b.year - a.year || b.id.localeCompare(a.id));
-      setArtifacts(sorted);
-    }, (error) => {
-      console.warn("Firebase is not initialized or offline. Using local state.", error);
-    });
+    const fetchArtifacts = async () => {
+      const { data, error } = await supabase
+        .from('artifacts')
+        .select('*');
+      if (error) {
+        console.warn("Supabase fetch error, using local state.", error);
+      } else if (data) {
+        const sorted = data.sort((a: any, b: any) => b.year - a.year || b.id.localeCompare(a.id));
+        setArtifacts(sorted);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchArtifacts();
+
+    // Real-time subscription to changes in artifacts table
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'artifacts' },
+        () => {
+          fetchArtifacts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -83,9 +98,12 @@ export default function App() {
   // Handle adding an artifact
   const handleSaveArtifact = async (newArtifact: Artifact) => {
     try {
-      await setDoc(doc(db, 'artifacts', newArtifact.id), newArtifact);
+      const { error } = await supabase
+        .from('artifacts')
+        .upsert(newArtifact);
+      if (error) throw error;
     } catch (e) {
-      console.error("Error saving artifact to Firestore: ", e);
+      console.error("Error saving artifact to Supabase: ", e);
       // Fallback to local state
       setArtifacts(prev => [newArtifact, ...prev]);
     }
@@ -98,13 +116,16 @@ export default function App() {
   // Handle saving partner perspective
   const handleSavePerspective = async (artifactId: string, text: string) => {
     try {
-      const docRef = doc(db, 'artifacts', artifactId);
-      await updateDoc(docRef, {
-        partnerPerspective: text,
-        partnerPerspectiveId: text
-      });
+      const { error } = await supabase
+        .from('artifacts')
+        .update({
+          partnerPerspective: text,
+          partnerPerspectiveId: text
+        })
+        .eq('id', artifactId);
+      if (error) throw error;
     } catch (e) {
-      console.error("Error updating partner perspective in Firestore: ", e);
+      console.error("Error updating partner perspective in Supabase: ", e);
     }
   };
 
