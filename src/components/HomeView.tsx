@@ -27,13 +27,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [localLogs, setLocalLogs] = useState<string[]>([]);
 
   // Find Uluwatu or today's banner item
-  const bannerArtifact = artifacts.find(a => a.id === '6') || artifacts[0];
+  const bannerArtifact = artifacts.length > 0 ? (artifacts.find(a => a.id === '6') || artifacts[0]) : null;
   
   // Find "Mountain Road" (2 years ago today)
-  const mountainRoadArtifact = artifacts.find(a => a.id === '2') || artifacts[3];
+  const mountainRoadArtifact = artifacts.length > 0 ? (artifacts.find(a => a.id === '2') || artifacts[3]) : null;
 
   // Get a random artifact quote
-  const randomArtifact = artifacts.find(a => a.id === '1') || artifacts[1];
+  const randomArtifact = artifacts.length > 0 ? (artifacts.find(a => a.id === '1') || artifacts[1]) : null;
 
   const handleAddNarrative = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +141,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Bento Mini Card - Random Artifact */}
         <div
-          onClick={() => onViewArtifact(randomArtifact.id)}
+          onClick={() => randomArtifact ? onViewArtifact(randomArtifact.id) : onNavigate('add')}
           className="bg-white rounded-xl p-6 border border-outline-variant flex flex-col justify-between group cursor-pointer hover:bg-gallery-beige/50 transition-all duration-300 shadow-[0_2px_12px_rgba(15,23,42,0.03)] hover:shadow-md"
         >
           <div className="flex justify-between items-start mb-4">
@@ -152,21 +152,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="flex gap-4 items-center">
-            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-sm border border-outline-variant/20">
-              <img
-                className="w-full h-full object-cover"
-                src={randomArtifact.imageUrl}
-                alt={randomArtifact.title}
-                referrerPolicy="no-referrer"
-              />
-            </div>
+            {randomArtifact && (
+              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-sm border border-outline-variant/20">
+                <img
+                  className="w-full h-full object-cover"
+                  src={randomArtifact.imageUrl}
+                  alt={randomArtifact.title}
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
             <p className="font-quote-italic text-[15px] leading-snug italic text-charcoal pr-2">
-              "{(() => {
+              "{randomArtifact ? (() => {
                 const desc = language === 'en' ? randomArtifact.description : randomArtifact.descriptionId;
                 const sentences = desc.split(/[.!?]+/);
                 const firstSentence = sentences[0] ? sentences[0].trim() : '';
                 return firstSentence.length > 70 ? firstSentence.substring(0, 70) + '...' : firstSentence + '...';
-              })()}"
+              })() : (
+                language === 'en' 
+                  ? 'Every great story starts with a single moment.' 
+                  : 'Setiap cerita indah dimulai dari satu momen sederhana.'
+              )}"
             </p>
           </div>
         </div>
@@ -184,8 +190,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="relative aspect-[4/5] md:aspect-[16/10] rounded-2xl overflow-hidden group border border-outline-variant shadow-[0_4px_24px_rgba(15,23,42,0.04)]">
             <img
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-              src={bannerArtifact.imageUrl}
-              alt={language === 'en' ? bannerArtifact.title : bannerArtifact.titleId}
+              src={bannerArtifact ? bannerArtifact.imageUrl : 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1200'}
+              alt={bannerArtifact ? (language === 'en' ? bannerArtifact.title : bannerArtifact.titleId) : 'Empty Sanctuary'}
               referrerPolicy="no-referrer"
             />
             {/* Elegant overlay gradient matching screenshot */}
@@ -196,13 +202,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {t.todaysMemory}
               </p>
               <h2 className="font-headline-lg text-headline-lg text-warm-cream mb-4 font-bold tracking-tight">
-                {language === 'en' ? bannerArtifact.title : bannerArtifact.titleId}
+                {bannerArtifact 
+                  ? (language === 'en' ? bannerArtifact.title : bannerArtifact.titleId)
+                  : (language === 'en' ? 'Your Living Museum' : 'Museum Hidup Anda')}
               </h2>
               <button
-                onClick={() => onViewArtifact(bannerArtifact.id)}
+                onClick={() => bannerArtifact ? onViewArtifact(bannerArtifact.id) : onNavigate('add')}
                 className="bg-warm-cream hover:bg-white text-charcoal hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-label-caps text-[10px] font-semibold tracking-widest shadow-sm active:scale-95 cursor-pointer"
               >
-                {t.exhibitDetails}
+                {bannerArtifact ? t.exhibitDetails : (language === 'en' ? 'PRESERVE FIRST MEMORY' : 'ABADIKAN MEMORI PERTAMA')}
               </button>
             </div>
           </div>
@@ -211,39 +219,57 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Side Cards (4 columns wide) */}
         <div className="lg:col-span-4 flex flex-col gap-gutter">
           {/* Memory of the Day (Mountain Road) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            onClick={() => onViewArtifact('2')}
-            className="bg-white rounded-2xl overflow-hidden flex-1 border border-outline-variant flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow"
-          >
-            <div className="h-40 relative overflow-hidden">
-              <img
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD53e41dSG2z3PzYkTxlmrd3z5zatdXEL8AEP5ByOTsFOOhrKgNLERQDUdtoit-XHxT_SENM2kp_8BsmrYJIisLDXj8D50AVf7oIKTEvs0vo56kbwhfH7U_qAN96MJBNFSo48ldL-PRtsL_Im6ZU11_0ea3yAV20xKcDe9dZfpszhJDP5gM663ix2qeAXG8hMgziaQBCkMpwSSzMjP1Zrbrrntk_nuWw_4JfOrbX34bDWxdNcaysxiqVcB10tasihJgSnesLZCrp9J"
-                alt="Mountain road"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute top-4 left-4 bg-charcoal/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                <span className="font-label-caps text-[9px] uppercase tracking-wider text-white font-medium">
-                  2 {t.yearsAgoToday}
-                </span>
+          {mountainRoadArtifact ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              onClick={() => onViewArtifact(mountainRoadArtifact.id)}
+              className="bg-white rounded-2xl overflow-hidden flex-1 border border-outline-variant flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow"
+            >
+              <div className="h-40 relative overflow-hidden">
+                <img
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  src={mountainRoadArtifact.imageUrl}
+                  alt={mountainRoadArtifact.title}
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute top-4 left-4 bg-charcoal/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                  <span className="font-label-caps text-[9px] uppercase tracking-wider text-white font-medium">
+                    2 {t.yearsAgoToday}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="p-6 flex-grow flex flex-col justify-between">
-              <div>
-                <h3 className="font-headline-md text-headline-md text-charcoal mb-2 font-semibold">
-                  {language === 'en' ? 'Mountain Road' : 'Jalan Pegunungan'}
-                </h3>
-                <p className="text-muted-taupe font-body-md line-clamp-3 text-sm leading-relaxed">
-                  {language === 'en' 
-                    ? 'We drove for hours without saying a word, just listening to the sound of the wind. One of my favorite quiet...'
-                    : 'Kita berkendara berjam-jam tanpa mengucapkan sepatah kata pun, hanya mendengarkan suara angin. Salah satu momen tenang favoritku...'}
-                </p>
+              <div className="p-6 flex-grow flex flex-col justify-between">
+                <div>
+                  <h3 className="font-headline-md text-headline-md text-charcoal mb-2 font-semibold">
+                    {language === 'en' ? mountainRoadArtifact.title : mountainRoadArtifact.titleId}
+                  </h3>
+                  <p className="text-muted-taupe font-body-md line-clamp-3 text-sm leading-relaxed">
+                    {language === 'en' ? mountainRoadArtifact.description : mountainRoadArtifact.descriptionId}
+                  </p>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              onClick={() => onNavigate('add')}
+              className="bg-white rounded-2xl p-6 border border-outline-variant flex-1 flex flex-col justify-center items-center text-center group cursor-pointer hover:bg-gallery-beige/30 transition-all"
+            >
+              <Sparkles className="w-8 h-8 text-terracotta mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-headline-md text-[16px] text-charcoal mb-1.5 font-semibold">
+                {language === 'en' ? 'Awaiting Your History' : 'Menanti Sejarah Anda'}
+              </h3>
+              <p className="text-muted-taupe text-xs leading-relaxed max-w-[200px]">
+                {language === 'en' 
+                  ? 'Your shared timeline is currently empty. Add a moment to begin.' 
+                  : 'Garis waktu bersama Anda masih kosong. Tambahkan momen untuk memulai.'}
+              </p>
+            </motion.div>
+          )}
 
           {/* Collaborative Note / Prompt with real Interactive States */}
           <motion.div

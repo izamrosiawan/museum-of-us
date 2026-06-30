@@ -27,7 +27,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   // Persistence state
-  const [artifacts, setArtifacts] = useState<Artifact[]>(INITIAL_ARTIFACTS);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
 
   const [language, setLanguage] = useState<Language>(() => {
     const local = localStorage.getItem('digital_sanctuary_lang');
@@ -55,30 +55,16 @@ export default function App() {
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Real-time Firestore sync & auto-seeding
+  // Real-time Firestore sync
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'artifacts'), async (snapshot) => {
-      if (snapshot.empty) {
-        // Seeding database with INITIAL_ARTIFACTS if empty
-        const batch = writeBatch(db);
-        INITIAL_ARTIFACTS.forEach((art) => {
-          const docRef = doc(db, 'artifacts', art.id);
-          batch.set(docRef, art);
-        });
-        try {
-          await batch.commit();
-        } catch (e) {
-          console.error("Error seeding initial data to Firestore: ", e);
-        }
-      } else {
-        const list: Artifact[] = [];
-        snapshot.forEach((doc) => {
-          list.push(doc.data() as Artifact);
-        });
-        // Sort chronologically descending
-        const sorted = list.sort((a, b) => b.year - a.year || b.id.localeCompare(a.id));
-        setArtifacts(sorted);
-      }
+    const unsubscribe = onSnapshot(collection(db, 'artifacts'), (snapshot) => {
+      const list: Artifact[] = [];
+      snapshot.forEach((doc) => {
+        list.push(doc.data() as Artifact);
+      });
+      // Sort chronologically descending
+      const sorted = list.sort((a, b) => b.year - a.year || b.id.localeCompare(a.id));
+      setArtifacts(sorted);
     }, (error) => {
       console.warn("Firebase is not initialized or offline. Using local state.", error);
     });
