@@ -9,6 +9,7 @@ interface DetailViewProps {
   artifact: Artifact;
   onBack: () => void;
   onRememberAgain: () => void;
+  onSavePerspective: (artifactId: string, text: string) => void;
 }
 
 export const DetailView: React.FC<DetailViewProps> = ({
@@ -16,8 +17,17 @@ export const DetailView: React.FC<DetailViewProps> = ({
   artifact,
   onBack,
   onRememberAgain,
+  onSavePerspective,
 }) => {
   const t = DICTIONARY[language];
+  const [isEditingPerspective, setIsEditingPerspective] = React.useState(false);
+  const [perspectiveText, setPerspectiveText] = React.useState(
+    (language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || ''
+  );
+
+  React.useEffect(() => {
+    setPerspectiveText((language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || '');
+  }, [artifact, language]);
 
   // Map categories to appropriate symbols or colors
   const getMoodColorClass = (moodStr: string) => {
@@ -121,19 +131,47 @@ export const DetailView: React.FC<DetailViewProps> = ({
                 <h3 className="font-label-caps text-[10px] text-muted-taupe tracking-widest uppercase font-bold">
                   {language === 'en' ? 'Partner Perspective' : 'Perspektif Pasangan'}
                 </h3>
-                <BookOpen className="w-4 h-4 text-dusty-blue opacity-70" />
+                <button
+                  onClick={() => setIsEditingPerspective(!isEditingPerspective)}
+                  className="text-[10px] text-terracotta hover:underline font-bold font-label-caps uppercase cursor-pointer"
+                >
+                  {isEditingPerspective 
+                    ? (language === 'en' ? 'Cancel' : 'Batal') 
+                    : (language === 'en' ? 'Edit' : 'Ubah')}
+                </button>
               </div>
               
               <div className="w-12 h-[1px] bg-terracotta/40" />
               
-              <p className="font-body-lg text-body-lg text-secondary italic leading-relaxed text-charcoal">
-                "{language === 'en' 
-                  ? (artifact.partnerPerspective || 'No comments from your partner yet.')
-                  : (artifact.partnerPerspectiveId || 'Belum ada komentar dari pasanganmu.')}"
-              </p>
+              {isEditingPerspective ? (
+                <div className="space-y-3">
+                  <textarea
+                    value={perspectiveText}
+                    onChange={e => setPerspectiveText(e.target.value)}
+                    placeholder={language === 'en' ? 'Add your perspective...' : 'Tambahkan perspektif Anda...'}
+                    className="w-full bg-gallery-beige/30 border border-outline-variant/20 rounded-xl p-3 text-xs outline-none text-charcoal focus:border-terracotta transition-colors resize-none"
+                    rows={4}
+                  />
+                  <button
+                    onClick={() => {
+                      onSavePerspective(artifact.id, perspectiveText);
+                      setIsEditingPerspective(false);
+                    }}
+                    className="bg-charcoal text-warm-cream text-[9px] font-label-caps uppercase px-4 py-2 rounded-lg font-bold tracking-wider cursor-pointer hover:bg-charcoal/90 transition-colors"
+                  >
+                    {language === 'en' ? 'Save' : 'Simpan'}
+                  </button>
+                </div>
+              ) : (
+                <p className="font-body-lg text-body-lg text-secondary italic leading-relaxed text-charcoal">
+                  "{language === 'en' 
+                    ? (artifact.partnerPerspective || 'No comments from your partner yet.')
+                    : (artifact.partnerPerspectiveId || 'Belum ada komentar dari pasanganmu.')}"
+                </p>
+              )}
               
               <div className="flex items-center gap-2 pt-2">
-                <span className="w-2 h-2 rounded-full bg-terracotta"></span>
+                <span className="w-2 h-2 rounded-full bg-sage-green"></span>
                 <span className="text-[10px] font-mono text-muted-taupe">
                   {language === 'en' ? 'Connected Sync' : 'Sinkron Terhubung'}
                 </span>

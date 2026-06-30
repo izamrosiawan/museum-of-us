@@ -7,6 +7,8 @@ import { GalleryView } from './components/GalleryView';
 import { AddArtifactView } from './components/AddArtifactView';
 import { ChroniclesView } from './components/ChroniclesView';
 import { DetailView } from './components/DetailView';
+import { db } from './firebase';
+import { collection, onSnapshot, doc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { 
   Home, 
   Landmark, 
@@ -25,10 +27,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   // Persistence state
-  const [artifacts, setArtifacts] = useState<Artifact[]>(() => {
-    const local = localStorage.getItem('digital_sanctuary_artifacts');
-    return local ? JSON.parse(local) : INITIAL_ARTIFACTS;
-  });
+  const [artifacts, setArtifacts] = useState<Artifact[]>(INITIAL_ARTIFACTS);
 
   const [language, setLanguage] = useState<Language>(() => {
     const local = localStorage.getItem('digital_sanctuary_lang');
@@ -56,10 +55,36 @@ export default function App() {
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sync to local storage
+  // Real-time Firestore sync & auto-seeding
   useEffect(() => {
-    localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(artifacts));
-  }, [artifacts]);
+    const unsubscribe = onSnapshot(collection(db, 'artifacts'), async (snapshot) => {
+      if (snapshot.empty) {
+        // Seeding database with INITIAL_ARTIFACTS if empty
+        const batch = writeBatch(db);
+        INITIAL_ARTIFACTS.forEach((art) => {
+          const docRef = doc(db, 'artifacts', art.id);
+          batch.set(docRef, art);
+        });
+        try {
+          await batch.commit();
+        } catch (e) {
+          console.error("Error seeding initial data to Firestore: ", e);
+        }
+      } else {
+        const list: Artifact[] = [];
+        snapshot.forEach((doc) => {
+          list.push(doc.data() as Artifact);
+        });
+        // Sort chronologically descending
+        const sorted = list.sort((a, b) => b.year - a.year || b.id.localeCompare(a.id));
+        setArtifacts(sorted);
+      }
+    }, (error) => {
+      console.warn("Firebase is not initialized or offline. Using local state.", error);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('digital_sanctuary_lang', language);
@@ -70,12 +95,31 @@ export default function App() {
   }, [profile]);
 
   // Handle adding an artifact
-  const handleSaveArtifact = (newArtifact: Artifact) => {
-    setArtifacts(prev => [newArtifact, ...prev]);
+  const handleSaveArtifact = async (newArtifact: Artifact) => {
+    try {
+      await setDoc(doc(db, 'artifacts', newArtifact.id), newArtifact);
+    } catch (e) {
+      console.error("Error saving artifact to Firestore: ", e);
+      // Fallback to local state
+      setArtifacts(prev => [newArtifact, ...prev]);
+    }
     // Navigate to gallery to view it
     setTimeout(() => {
       setCurrentView('gallery');
     }, 800);
+  };
+
+  // Handle saving partner perspective
+  const handleSavePerspective = async (artifactId: string, text: string) => {
+    try {
+      const docRef = doc(db, 'artifacts', artifactId);
+      await updateDoc(docRef, {
+        partnerPerspective: text,
+        partnerPerspectiveId: text
+      });
+    } catch (e) {
+      console.error("Error updating partner perspective in Firestore: ", e);
+    }
   };
 
   // View specific artifact
@@ -162,6 +206,7 @@ export default function App() {
             artifact={activeArtifact}
             onBack={() => setCurrentView('gallery')}
             onRememberAgain={handleRememberAgain}
+            onSavePerspective={handleSavePerspective}
           />
         );
       default:
