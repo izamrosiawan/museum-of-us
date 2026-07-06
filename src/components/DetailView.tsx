@@ -1,7 +1,7 @@
 import React from 'react';
 import { Artifact, Language } from '../types';
 import { DICTIONARY } from '../data/initialData';
-import { ArrowLeft, MapPin, Cloudy, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowLeft, MapPin, Cloudy, Sparkles, BookOpen, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface DetailViewProps {
@@ -10,6 +10,7 @@ interface DetailViewProps {
   onBack: () => void;
   onRememberAgain: () => void;
   onSavePerspective: (artifactId: string, text: string) => void;
+  onDelete: (artifactId: string) => void;
 }
 
 export const DetailView: React.FC<DetailViewProps> = ({
@@ -18,6 +19,7 @@ export const DetailView: React.FC<DetailViewProps> = ({
   onBack,
   onRememberAgain,
   onSavePerspective,
+  onDelete,
 }) => {
   const t = DICTIONARY[language];
   const [isEditingPerspective, setIsEditingPerspective] = React.useState(false);
@@ -73,6 +75,20 @@ export const DetailView: React.FC<DetailViewProps> = ({
             {t.backToGallery}
           </span>
         </button>
+
+        <button
+          onClick={() => {
+            if (window.confirm(language === 'en' ? 'Are you sure you want to delete this memory forever?' : 'Apakah Anda yakin ingin menghapus memori ini selamanya?')) {
+              onDelete(artifact.id);
+            }
+          }}
+          className="flex items-center gap-2 text-danger-rose hover:text-danger-rose/85 hover:opacity-75 transition-all py-2 cursor-pointer group"
+        >
+          <Trash2 className="w-4 h-4 text-danger-rose group-hover:scale-110 transition-transform stroke-[2]" />
+          <span className="font-label-caps text-[9px] uppercase tracking-widest font-bold">
+            {language === 'en' ? 'Delete Memoir' : 'Hapus Memoar'}
+          </span>
+        </button>
       </motion.div>
 
       {/* Hero Large Aspect Image Section */}
@@ -111,7 +127,9 @@ export const DetailView: React.FC<DetailViewProps> = ({
           </span>
           <div className="h-[1px] w-12 bg-outline-variant/40" />
           <p className="font-body-md text-body-md text-secondary italic text-sm">
-            {language === 'en' ? `Added by ${artifact.addedBy}` : `Ditambahkan oleh ${artifact.addedBy}`}
+            {language === 'en' 
+              ? `Added by ${artifact.addedBy || 'Sanctuary Curator'}` 
+              : `Ditambahkan oleh ${artifact.addedBy || 'Kurator Tempat Suci'}`}
           </p>
         </div>
       </motion.section>

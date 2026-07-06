@@ -173,6 +173,39 @@ export default function App() {
     }
   };
 
+  const handleDeleteArtifact = async (artifactId: string) => {
+    if (!supabase) {
+      setArtifacts(prev => {
+        const updated = prev.filter(art => art.id !== artifactId);
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
+      setCurrentView('gallery');
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('artifacts')
+        .delete()
+        .eq('id', artifactId);
+      if (error) throw error;
+      
+      setArtifacts(prev => {
+        const updated = prev.filter(art => art.id !== artifactId);
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.error("Error deleting artifact from Supabase: ", e);
+      setArtifacts(prev => {
+        const updated = prev.filter(art => art.id !== artifactId);
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
+    }
+    setCurrentView('gallery');
+  };
+
   // View specific artifact
   const handleViewArtifact = (id: string) => {
     setSelectedArtifactId(id);
@@ -258,6 +291,7 @@ export default function App() {
             onBack={() => setCurrentView('gallery')}
             onRememberAgain={handleRememberAgain}
             onSavePerspective={handleSavePerspective}
+            onDelete={handleDeleteArtifact}
           />
         );
       default:
