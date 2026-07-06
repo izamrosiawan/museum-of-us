@@ -26,7 +26,10 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   // Persistence state
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [artifacts, setArtifacts] = useState<Artifact[]>(() => {
+    const local = localStorage.getItem('digital_sanctuary_artifacts');
+    return local ? JSON.parse(local) : INITIAL_ARTIFACTS;
+  });
 
   const [language, setLanguage] = useState<Language>(() => {
     const local = localStorage.getItem('digital_sanctuary_lang');
@@ -69,6 +72,7 @@ export default function App() {
       } else if (data) {
         const sorted = data.sort((a: any, b: any) => b.year - a.year || b.id.localeCompare(a.id));
         setArtifacts(sorted);
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(sorted));
       }
     };
 
@@ -102,7 +106,11 @@ export default function App() {
   // Handle adding an artifact
   const handleSaveArtifact = async (newArtifact: Artifact) => {
     if (!supabase) {
-      setArtifacts(prev => [newArtifact, ...prev]);
+      setArtifacts(prev => {
+        const updated = [newArtifact, ...prev];
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
       setTimeout(() => {
         setCurrentView('gallery');
       }, 800);
@@ -116,7 +124,11 @@ export default function App() {
     } catch (e) {
       console.error("Error saving artifact to Supabase: ", e);
       // Fallback to local state
-      setArtifacts(prev => [newArtifact, ...prev]);
+      setArtifacts(prev => {
+        const updated = [newArtifact, ...prev];
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
     }
     // Navigate to gallery to view it
     setTimeout(() => {
@@ -127,11 +139,15 @@ export default function App() {
   // Handle saving partner perspective
   const handleSavePerspective = async (artifactId: string, text: string) => {
     if (!supabase) {
-      setArtifacts(prev => prev.map(art => 
-        art.id === artifactId 
-          ? { ...art, partnerPerspective: text, partnerPerspectiveId: text } 
-          : art
-      ));
+      setArtifacts(prev => {
+        const updated = prev.map(art => 
+          art.id === artifactId 
+            ? { ...art, partnerPerspective: text, partnerPerspectiveId: text } 
+            : art
+        );
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
       return;
     }
     try {
@@ -145,6 +161,15 @@ export default function App() {
       if (error) throw error;
     } catch (e) {
       console.error("Error updating partner perspective in Supabase: ", e);
+      setArtifacts(prev => {
+        const updated = prev.map(art => 
+          art.id === artifactId 
+            ? { ...art, partnerPerspective: text, partnerPerspectiveId: text } 
+            : art
+        );
+        localStorage.setItem('digital_sanctuary_artifacts', JSON.stringify(updated));
+        return updated;
+      });
     }
   };
 
