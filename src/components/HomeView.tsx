@@ -164,7 +164,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             )}
             <p className="font-quote-italic text-[15px] leading-snug italic text-charcoal pr-2">
               "{randomArtifact ? (() => {
-                const desc = language === 'en' ? randomArtifact.description : randomArtifact.descriptionId;
+                const desc = (language === 'en' ? randomArtifact.description : randomArtifact.descriptionId) || '';
                 const sentences = desc.split(/[.!?]+/);
                 const firstSentence = sentences[0] ? sentences[0].trim() : '';
                 return firstSentence.length > 70 ? firstSentence.substring(0, 70) + '...' : firstSentence + '...';

@@ -31,7 +31,7 @@ export const ChroniclesView: React.FC<ChroniclesViewProps> = ({
       
       // Extract month name
       // e.g. "14 Oct 1992" -> "October" (English) or "Oktober" (Indonesian)
-      const monthPart = item.date.split(' ')[1] || 'Jan';
+      const monthPart = (item.date || '').split(' ')[1] || 'Jan';
       let monthName = 'January';
       
       if (monthPart.toLowerCase().includes('jan')) monthName = language === 'en' ? 'January' : 'Januari';
@@ -148,7 +148,7 @@ export const ChroniclesView: React.FC<ChroniclesViewProps> = ({
 
                             {/* Tags list */}
                             <div className={`flex flex-wrap gap-1 mt-2.5 ${isLeft ? 'md:justify-end' : 'md:justify-start'}`}>
-                              {(language === 'en' ? artifact.tags : artifact.tagsId).map((tag, tIndex) => (
+                              {((language === 'en' ? artifact.tags : artifact.tagsId) || []).map((tag, tIndex) => (
                                 <span key={tIndex} className="text-[8px] bg-charcoal/5 text-muted-taupe px-1.5 py-0.5 rounded font-mono">
                                   #{tag}
                                 </span>

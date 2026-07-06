@@ -34,13 +34,20 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
 
   const filteredArtifacts = useMemo(() => {
     return artifacts.filter(item => {
+      const title = item.title || '';
+      const titleId = item.titleId || '';
+      const description = item.description || '';
+      const descriptionId = item.descriptionId || '';
+      const location = item.location || '';
+      const locationId = item.locationId || '';
+
       const matchSearch =
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.titleId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.descriptionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.locationId.toLowerCase().includes(searchTerm.toLowerCase());
+        title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        titleId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        descriptionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        locationId.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchCategory = selectedCategory === 'All' || item.category === selectedCategory;
 
@@ -154,7 +161,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     
                     {/* Tag bubbles */}
                     <div className="flex flex-wrap gap-1.5 mt-3">
-                      {(language === 'en' ? artifact.tags : artifact.tagsId).slice(0, 2).map((tag, i) => (
+                      {((language === 'en' ? artifact.tags : artifact.tagsId) || []).slice(0, 2).map((tag, i) => (
                         <span key={i} className="text-[9px] font-mono bg-charcoal/5 px-2 py-0.5 rounded text-muted-taupe">
                           #{tag}
                         </span>

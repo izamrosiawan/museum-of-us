@@ -22,20 +22,39 @@ export const DetailView: React.FC<DetailViewProps> = ({
   const t = DICTIONARY[language];
   const [isEditingPerspective, setIsEditingPerspective] = React.useState(false);
   const [perspectiveText, setPerspectiveText] = React.useState(
-    (language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || ''
+    artifact ? ((language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || '') : ''
   );
 
   React.useEffect(() => {
-    setPerspectiveText((language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || '');
+    if (artifact) {
+      setPerspectiveText((language === 'en' ? artifact.partnerPerspective : artifact.partnerPerspectiveId) || '');
+    }
   }, [artifact, language]);
 
   // Map categories to appropriate symbols or colors
   const getMoodColorClass = (moodStr: string) => {
-    if (moodStr.toLowerCase().includes('solitude') || moodStr.toLowerCase().includes('nostalgia')) return 'bg-sage-green';
-    if (moodStr.toLowerCase().includes('focus') || moodStr.toLowerCase().includes('zen')) return 'bg-dusty-blue';
-    if (moodStr.toLowerCase().includes('security') || moodStr.toLowerCase().includes('warm')) return 'bg-terracotta';
+    const safeMood = (moodStr || '').toLowerCase();
+    if (safeMood.includes('solitude') || safeMood.includes('nostalgia')) return 'bg-sage-green';
+    if (safeMood.includes('focus') || safeMood.includes('zen')) return 'bg-dusty-blue';
+    if (safeMood.includes('security') || safeMood.includes('warm')) return 'bg-terracotta';
     return 'bg-heritage-gold';
   };
+
+  if (!artifact) {
+    return (
+      <div className="text-center py-20 bg-white rounded-2xl border border-outline-variant p-8 shadow-sm">
+        <p className="text-muted-taupe italic mb-4">
+          {language === 'en' ? 'Memoir details not found.' : 'Detail memoar tidak ditemukan.'}
+        </p>
+        <button 
+          onClick={onBack} 
+          className="text-terracotta underline font-semibold text-sm hover:opacity-85 transition-opacity"
+        >
+          {language === 'en' ? '← Back to Gallery' : '← Kembali ke Galeri'}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-10 pb-16">
@@ -106,7 +125,7 @@ export const DetailView: React.FC<DetailViewProps> = ({
           </h3>
           <div className="story-text text-[20px] md:text-[23px] leading-relaxed text-charcoal font-medium space-y-6 pt-2 select-text selection:bg-gallery-beige">
             {/* Split paragraphs gracefully */}
-            {(language === 'en' ? artifact.description : artifact.descriptionId)
+            {((language === 'en' ? artifact.description : artifact.descriptionId) || '')
               .split('\n\n')
               .map((para, pIdx) => (
                 <p key={pIdx}>{para}</p>
